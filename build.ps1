@@ -406,6 +406,9 @@ Copy-Item -Path $input_rom_file -Destination $output_rom_file
 & dotnet $scripttool_cmd $scripttool_args
 if ($LASTEXITCODE -ne 0) { exit -1 }
 
+# 递归打印所有文件
+#Get-ChildItem -File -Recurse | ForEach-Object { Write-Host $_.FullName }
+
 "Copying give strings to src folder..."
 Copy-Item -Path $give_dir -Destination $give_new_dir -Recurse
 

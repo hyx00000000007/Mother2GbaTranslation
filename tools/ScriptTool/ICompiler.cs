@@ -13,5 +13,6 @@ namespace ScriptTool
         void ScanString(string str, ref int referenceAddress, IDictionary<byte, string> charLookup, bool scanCodesOnly,
             out IList<string> references, out ISet<IControlCode> controlCodes);
         void CompileString(string str, IList<byte> buffer, ref int referenceAddress, IDictionary<byte, string> charLookup);
+        void CompileString4CN(string str, IList<byte> buffer, ref int referenceAddress, IDictionary<int, string> charLookup);
     }
 }

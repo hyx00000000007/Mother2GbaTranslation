@@ -63,6 +63,11 @@ namespace ScriptTool
             return charLookup.First(kv => kv.Value[0] == c).Key; // lazy
         }
 
+        private int GetInt(char c, IDictionary<int, string> charLookup)
+        {
+            return charLookup.First(kv => kv.Value[0] == c).Key; // lazy
+        }
+
         public void ScanString(string str, ref int referenceAddress, IDictionary<byte, string> charLookup, bool scanCodesOnly)
         {
             ISet<IControlCode> codes;
@@ -268,6 +273,84 @@ namespace ScriptTool
                         buffer.Add(0);
 
                     referenceAddress++;
+                }
+            }
+        }
+
+        public void CompileString4CN(string str, IList<byte> buffer, ref int referenceAddress, IDictionary<int, string> charLookup)
+        {
+            int previousBufferSize = buffer.Count;
+            for (int i = 0; i < str.Length; )
+            {
+                if (str[i] == '[')
+                {
+                    if (str.IndexOf(']', i + 1) == -1)
+                        throw new Exception("Opening bracket has no matching closing bracket: position " + i);
+
+                    string[] codeStrings = str.Substring(i + 1, str.IndexOf(']', i + 1) - i - 1)
+                        .Split(' ');
+
+                    // Match the code
+                    IControlCode code = ControlCodes.FirstOrDefault(c => c.IsMatch(codeStrings));
+
+                    if (code == null)
+                    {
+                        // Direct copy
+                        for (int j = 0; j < codeStrings.Length; j++)
+                        {
+                            if (!IsHexByte(codeStrings[j]))
+                                throw new Exception("Code string for unrecognized control code block must be a byte literal: position " + i);
+
+                            byte value = byte.Parse(codeStrings[j], System.Globalization.NumberStyles.HexNumber);
+                            if (buffer != null)
+                                buffer.Add(value);
+                            referenceAddress++;
+                        }
+                    }
+
+                    else
+                    {
+                        // Validate
+                        if (!code.IsValid(codeStrings))
+                            throw new Exception("Invalid control code: position " + i);
+
+                        // Parse
+                        code.Compile(codeStrings, buffer, ref referenceAddress, AddressMap);
+                    }
+
+                    i = str.IndexOf(']', i + 1) + 1;
+                }
+                else if (str[i] == ']')
+                {
+                    throw new Exception("Closing bracket has no matching opening bracket: position " + i);
+                }
+                else if (str[i] == '^')
+                {
+                    if (str.IndexOf('^', i + 1) == -1)
+                        throw new Exception("Label has no matching closing caret: position " + i);
+
+                    i = str.IndexOf('^', i + 1) + 1;
+                }
+                else
+                {
+                    if (!(str[i] == '\r') && !(str[i] == '\n'))
+                    {
+                        int value = GetInt(str[i], charLookup);
+                        byte[] bytes = BitConverter.GetBytes(value);
+
+                        for (int j = bytes.Length - 1; j >= 0; j--)
+                        {
+                            byte b = bytes[j];
+                            if(b != 0)
+                            {
+                                if (buffer != null)
+                                    buffer.Add(b);
+
+                                referenceAddress++;
+                            }
+                        }
+                    }
+                    i++;
                 }
             }
         }

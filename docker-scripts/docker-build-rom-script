@@ -2,6 +2,7 @@
 
 $Env:PATH += ":/home/m2gba/.dotnet:/home/m2gba/.dotnet/tools"
 Copy-Item -Path "\home\m2gba\src\*" -Destination "\opt\src" -Recurse -Force
+Remove-Item -Path '\home\m2gba\src\out' -Recurse
 
 "Starting to build tools"
 ./build-tools.ps1
@@ -14,5 +15,6 @@ if ($LASTEXITCODE -ne 0) { exit -1 }
 "Copying rom to output"
 New-Item -Path "\home\m2gba\src" -Name "out" -ItemType "directory" -Force
 Copy-Item -Path ".\bin\m12.gba" "\home\m2gba\src\out"
+Copy-Item -Path ".\working\*" "\home\m2gba\src\out\working"
 
 "Build successful, please review the folder ./out/m12.gba for the resulting rom"

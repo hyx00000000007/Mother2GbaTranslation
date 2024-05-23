@@ -23,6 +23,7 @@ namespace ScriptTool
 
         static IDictionary<byte, string> m12CharLookup;
         static IDictionary<byte, string> ebCharLookup;
+        static IDictionary<int, string> cnCharLookup;
 
         // Compiler setup
         static Compiler m12Compiler;
@@ -41,6 +42,7 @@ namespace ScriptTool
 
                 m12CharLookup = JsonConvert.DeserializeObject<Dictionary<byte, string>>(Asset.ReadAllText("m12-char-lookup.json"));
                 ebCharLookup = JsonConvert.DeserializeObject<Dictionary<byte, string>>(Asset.ReadAllText("eb-char-lookup.json"));
+                cnCharLookup = JsonConvert.DeserializeObject<Dictionary<int, string>>(Asset.ReadAllText("cn-char-lookup.json"));
 
                 if (options.Command == CommandType.Decompile)
                 {
@@ -574,7 +576,7 @@ namespace ScriptTool
                     offsetFile.WriteLine(String.Format(".org 0x{0:X} :: dw 0x{1:X8}",
                         str.OffsetLocation | 0x8000000, referenceAddress - stringCollection.StringsLocation));
 
-                    m12Compiler.CompileString(str.New, buffer, ref referenceAddress, ebCharLookup);
+                    m12Compiler.CompileString4CN(str.New, buffer, ref referenceAddress, cnCharLookup);
                 }
             }
 
